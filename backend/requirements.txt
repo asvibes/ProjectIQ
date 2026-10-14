@@ -1,0 +1,7 @@
+# Core
+SQLAlchemy>=2.0.30,<2.1
+pydantic>=2.7,<3
+pydantic-settings>=2.3,<3
+
+# Testing
+pytest>=8.0,<9
