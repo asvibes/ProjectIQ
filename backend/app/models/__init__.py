@@ -7,6 +7,7 @@ from app.models.company import (
     CompanyWorkforceRole,
 )
 from app.models.document import Document
+from app.models.document_chunk import DocumentChunk
 from app.models.enums import (
     DocumentType,
     EquipmentOwnership,
@@ -29,6 +30,7 @@ __all__ = [
     "CompanyPastProject",
     "CompanyWorkforceRole",
     "Document",
+    "DocumentChunk",
     "DocumentType",
     "EquipmentOwnership",
     "ExtractedFact",

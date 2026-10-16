@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, BigInteger, CheckConstraint, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.database import Base
@@ -62,11 +62,20 @@ class Document(TimestampMixin, Base):
     processing_error: Mapped[Optional[str]] = mapped_column(Text)
     processed_at: Mapped[Optional[datetime]] = mapped_column(UTCDateTime)
     summary: Mapped[Optional[str]] = mapped_column(Text)
+    # What the ingestion reader reported: reader status, warnings, reader metadata, chunk
+    # count; on failure also the stage and error type. NULL until processing has run.
+    extraction_info: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
     company: Mapped[Optional["Company"]] = relationship(back_populates="documents")  # noqa: F821
     project: Mapped[Optional["Project"]] = relationship(back_populates="documents")  # noqa: F821
     extracted_facts: Mapped[list["ExtractedFact"]] = relationship(  # noqa: F821
         back_populates="document", cascade="all, delete-orphan", passive_deletes=True
+    )
+    chunks: Mapped[list["DocumentChunk"]] = relationship(  # noqa: F821
+        back_populates="document",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="DocumentChunk.chunk_index",
     )
     # Deleting a document keeps its requirements (source link is set to NULL by the DB).
     requirements: Mapped[list["Requirement"]] = relationship(  # noqa: F821
