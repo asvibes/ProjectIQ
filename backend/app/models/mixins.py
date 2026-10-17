@@ -17,6 +17,9 @@ class TimestampMixin:
         UTCDateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
 class VerifiableMixin:
     """Verification state. New records are REQUIRES_REVIEW until a person confirms them."""
