@@ -1,4 +1,4 @@
-"""Structured extraction from tender and company documents with the local model.
+﻿"""Structured extraction from tender and company documents with the local model.
 
 Three tasks, each with its own versioned prompt (``prompts/<task>_v1.txt``):
 
@@ -51,6 +51,7 @@ from app.services.ai.ollama_client import (
 )
 from app.services.ingestion.chunker import Chunk, chunk_document
 from app.services.ingestion.sanitizer import ExtractedDocument, normalize_for_comparison
+from app.services.verification.quote_checker import is_quote_supported
 
 __all__ = [
     "ChunkFailure",
@@ -413,7 +414,7 @@ def _common(raw: Any, chunk: Chunk, location: Optional[_Location], extractor: st
 
 
 def _norm_key(*parts: Optional[str]) -> str:
-    return "␟".join(normalize_for_comparison(p or "") for p in parts)
+    return "âŸ".join(normalize_for_comparison(p or "") for p in parts)
 
 
 # -- requirements -----------------------------------------------------------
@@ -507,3 +508,4 @@ def extract_risks(
 ) -> "ExtractionResult[ExtractedRisk]":
     """Risk-bearing clauses in a document (same error behaviour as above). No rating or score."""
     return _run(_RISKS, source, client)
+
