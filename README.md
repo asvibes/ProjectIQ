@@ -1,164 +1,247 @@
-# ProjectIQ
+ProjectIQ
+=========
 
-**AI-assisted tender evaluation and bid/no-bid decision support for industrial construction and engineering contractors.**
+AI-Powered Project and Tender Analysis Platform
+-----------------------------------------------
 
-ProjectIQ helps a contractor answer one question with evidence: *should we bid on this tender?* It reads tender documents, extracts requirements together with the exact quotation that supports each one, compares them against what the company can actually prove it has, and prepares a decision briefing. It is **decision support only**. A person reviews every uncertain or conflicting finding, and nothing extracted by AI is treated as verified until a person confirms it.
+ProjectIQ is an ongoing project designed to streamline project planning and tender analysis through automated document processing, structured data extraction, and locally executed artificial intelligence models. The primary objective is to assist organizations in evaluating tender documentation, extracting project requirements, identifying potential risks, assessing resource availability, and making informed, evidence-backed decisions.
 
-> **Project status: early development (backend foundation only).**
-> The data model, configuration, application shell and text sanitiser are implemented and tested.
-> Everything else described below, including document parsing, AI extraction, matching, finance, risk, scenarios, briefings, exports and the entire frontend, is **planned**: the files exist as empty placeholders. See [Implementation status](#implementation-status) for the exact picture.
+Status and Development Progress
+-------------------------------
 
----
+ProjectIQ is currently under active development. While the backend infrastructure and core analysis services have been implemented, several components—including portions of the frontend, advanced reporting engines, and deployment workflows—remain in progress.
 
-## Vision
+### Component Implementation Status
 
-| Capability | Purpose |
-|---|---|
-| Company profile and capability management | Workforce roles, equipment, certifications, past projects and finances, each fact carrying a verification status and date |
-| Tender document ingestion | Read PDF, DOCX, XLSX and text tenders without altering the originals |
-| Evidence-grounded requirement extraction | Every extracted requirement or fact must carry a supporting quotation and its location in the source |
-| Company-tender matching and gap analysis | Compare each requirement with company evidence; `Unknown` is the default and is never upgraded on keyword overlap |
-| Financial feasibility, bid pricing, cash flow | Deterministic calculations (not LLM-generated numbers) |
-| Risk identification and assessment | Surface and score risks from the tender and the company's position |
-| Scenario comparison | Compare alternative bids and assumptions side by side |
-| Evidence-backed decision briefings | A summary whose claims trace back to sources |
-| Local AI processing | Gemma through Ollama, so tender documents stay on the user's machine |
-| Human verification | Uncertain or conflicting findings are routed to a person |
+**ComponentStatus**FastAPI backend foundation
 
-The MVP/future split is defined in [docs/PRD.md](docs/PRD.md).
+Implemented
 
-## Implementation status
+Local AI integration using Ollama
 
-| Area | State |
-|---|---|
-| Configuration (`app/config.py`) | Implemented, tested |
-| Database engine, SQLite foreign keys, `init_db` | Implemented, tested |
-| ORM models: Company (+ workforce, equipment, certifications, past projects), Project, Document, Requirement, ExtractedFact | Implemented, tested |
-| FastAPI app factory, `/health`, CORS, router auto-discovery | Implemented, tested |
-| Ingestion: text sanitiser, size and zip-bomb checks, shared result types | Implemented (**no dedicated tests yet**) |
-| Ingestion: PDF / DOCX / XLSX / text readers, chunker | Placeholders (empty files) |
-| API routers (companies, projects, documents, requirements, fit, financials, risks, scenarios, briefing, chat, reports, resources, settings) | Placeholders; only `GET /health` exists |
-| AI layer (Ollama client, extractor, explainer, drafter, Q&A, prompts) | Placeholders; no Ollama code yet |
-| Analysis (matcher, gap detector, workforce gap, equipment options, risk scoring) | Placeholders |
-| Finance (cost model, bid pricing, break-even, cash flow, scenarios) | Placeholders |
-| Verification (quote checker, contradiction, schema validator) | Placeholders |
-| Models for risks, scenarios, financial models, resources, artifacts, audit | Placeholders; no schema yet |
-| Export (CSV, DOCX, PPTX) | Placeholders |
-| Frontend (React pages, components, charts) | Placeholders; `package.json` is empty |
-| Docker Compose, PowerShell setup scripts | Placeholders (empty) |
-| Demo data and evaluation harness (`demo-data/`, `eval/`) | Placeholders (empty) |
+Implemented
 
-Current test suite: **59 passing** (`backend/tests/`).
+Document ingestion and processing foundation
 
-## Technology stack
+In development
 
-**In use today**
+Requirement validation
 
-- Python 3 (developed and tested on 3.13; no minimum version is declared yet)
-- FastAPI and Uvicorn
-- SQLAlchemy 2.0 with SQLite (local default; the code avoids SQLite-only assumptions where practical)
-- Pydantic 2 and pydantic-settings
-- pytest and httpx
+Implemented
 
-**Planned (not yet wired up)**
+Evidence and quotation verification utilities
 
-- Gemma served locally by Ollama
-- PDF, DOCX and XLSX parsing libraries (none are in `requirements.txt` yet)
-- React + TypeScript + Vite + Tailwind frontend (file layout exists; no dependencies declared)
-- Docker Compose and Windows PowerShell setup scripts
-- Alembic migrations (the schema is currently created with `create_all`)
+Implemented
 
-## Prerequisites
+Contradiction detection across extracted facts
 
-- Python 3.13 recommended (the version the tests were run on)
-- `pip` and the `venv` module
-- Nothing else is needed to run the backend and tests today. Ollama, a Gemma model and Node.js will only be required once the AI layer and frontend exist.
+Implemented
 
-## Installation
+Equipment options and capacity analysis
 
-```bash
-git clone https://github.com/asvibes/ProjectIQ.git
-cd ProjectIQ/backend
+Implemented
 
-python -m venv .venv
-source .venv/bin/activate          # Windows PowerShell: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
+Workforce gap analysis foundation
 
-## Configuration
+Present in the codebase
 
-The backend runs with no configuration. To override defaults, copy `.env.example` to `.env` in the repo root or in `backend/` (the `backend/` file wins). Never commit `.env`.
+Financial and scenario analysis
 
-| Variable | Default | Meaning |
-|---|---|---|
-| `APP_ENV` | `development` | `development`, `test` or `production` |
-| `STORAGE_DIR` | `backend/storage` | Root for uploads, generated files and the SQLite file. Relative paths resolve against `backend/` |
-| `DATABASE_URL` | `sqlite:///<STORAGE_DIR>/projectiq.db` | SQLAlchemy URL. Relative SQLite paths resolve against `backend/` |
-| `SQL_ECHO` | `false` | Log every SQL statement (can expose data in logs) |
-| `DEFAULT_CURRENCY` | `USD` | ISO 4217 code used when a company or project has none |
+In development
 
-## Running
+Frontend and backend integration
 
-From `backend/`:
+In development
 
-```bash
-uvicorn app.main:app --reload
-```
+CSV, DOCX, and PPTX report generation
 
-- Liveness check: <http://127.0.0.1:8000/health>
-- Interactive API docs: <http://127.0.0.1:8000/docs>
+Planned / Incomplete
 
-Tables are created automatically at startup. To create them without starting the server:
+Complete end-to-end workflow
 
-```bash
-python -m app.database
-```
+In development
 
-At present `/health` is the only endpoint. The CORS allowlist covers `localhost` and `127.0.0.1` on ports 5173 and 3000 (intended for the future frontend).
+Note: Passing unit tests for individual backend components does not imply that every feature is fully integrated into a user-facing workflow.
 
-## Running the tests
+Platform Vision
+---------------
 
-From `backend/`:
+ProjectIQ provides a unified analytical workspace enabling users to perform the following operations:
 
-```bash
-pytest
-```
+*   Upload and analyze project and tender documents.
+    
+*   Extract structured requirements and pertinent factual data.
+    
+*   Match requirements against available organizational data.
+    
+*   Identify missing information and compliance discrepancies.
+    
+*   Detect contradictions across multiple source documents.
+    
+*   Evaluate workforce capacities and equipment inventories.
+    
+*   Perform financial cost modeling, scenario analysis, and risk assessments.
+    
+*   Explore AI-assisted insights anchored by traceable source evidence.
+    
+*   Generate evaluation documentation for decision-making processes.
+    
 
-Tests use an in-memory SQLite database and never touch `backend/storage/projectiq.db`.
+Architecture and Technology Stack
+---------------------------------
 
-## Project layout
+The platform utilizes a modern, modular technology stack designed to support local execution and maintain data privacy:
 
-```
-backend/
-  app/
-    main.py            # app factory, /health, CORS, router mounting
-    config.py          # settings (env + optional .env)
-    database.py        # engine, sessions, init_db
-    models/            # SQLAlchemy models (core models implemented; 6 placeholder files)
-    routers/           # auto-discovered API routers (all placeholders)
-    schemas/base.py    # Pydantic base classes (ORMModel, RequestModel)
-    services/          # ingestion, ai, analysis, finance, verification, export
-  tests/
-frontend/              # planned React app (placeholders)
-docs/                  # documentation
-demo-data/  eval/  scripts/  docker-compose.yml   # placeholders
-```
+**TechnologyPurposePython**
 
-## Documentation
+Backend development
 
-| Document | Contents |
-|---|---|
-| [docs/PRD.md](docs/PRD.md) | Product vision, users, requirements, workflows, MVP vs future scope |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Components, data flow, AI integration, implemented vs planned |
-| [docs/DATABASE.md](docs/DATABASE.md) | Tables, relationships, constraints and conventions |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Developer workflow and coding conventions |
-| [docs/PROMPTS.md](docs/PROMPTS.md) | Prompt conventions and planned prompts |
-| [docs/SECURITY_PRIVACY.md](docs/SECURITY_PRIVACY.md) | Data handling, threat model, current limitations |
+**FastAPI**
 
-## Disclaimer
+Backend API framework
 
-ProjectIQ supports human decision-making. It does not give legal, financial or contractual advice, and its outputs must be checked against the source documents before any bid decision.
+**Ollama**
 
-## License
+Local AI model execution
 
-No license has been chosen yet: the `LICENSE` file is currently empty. Until one is added, all rights are reserved by the author.
+**SQLAlchemy**
+
+Database interaction and ORM
+
+**Pytest**
+
+Automated testing
+
+**TypeScript / React**
+
+Frontend development
+
+**Tailwind CSS**
+
+Frontend styling
+
+Core Design Principles
+----------------------
+
+*   **Evidence Traceability:** Critical findings must retain verifiable supporting data references wherever available.
+    
+*   **Validation Prior to Acceptance:** Extracted data undergoes systematic validation rather than automated assumption.
+    
+*   **Transparency of Uncertainty:** Missing information is explicitly identified rather than implicitly evaluated as negative or confirmed.
+    
+*   **Decision Support:** AI-generated outputs serve to augment human evaluation rather than replace professional verification.
+    
+*   **Incremental Development:** System modules are designed, tested, and integrated iteratively.
+    
+
+Repository Structure
+--------------------
+
+Plaintext
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   ProjectIQ/  ├── backend/  │   ├── app/  │   │   ├── models/  │   │   ├── routers/  │   │   ├── schemas/  │   │   ├── services/  │   │   │   ├── ai/  │   │   │   ├── analysis/  │   │   │   ├── export/  │   │   │   ├── ingestion/  │   │   │   └── verification/  │   │   └── utils/  │   └── tests/  ├── frontend/  │   └── src/  ├── demo-data/  ├── docs/  ├── eval/  └── scripts/   `
+
+Testing Verification
+--------------------
+
+Automated test suites verify implemented backend functionality and mitigate regression risks. The current development branch successfully passes the primary test iterations, though certain environment-specific constraints (such as symbolic-link permissions in Windows testing environments) may require specific configurations.
+
+Project Roadmap
+---------------
+
+### Phase 1: Backend Foundation
+
+*   Establish FastAPI backend architecture.
+    
+*   Integrate local AI execution services.
+    
+*   Implement structured requirement validation protocols.
+    
+*   Develop quotation verification and contradiction detection utilities.
+    
+*   Implement equipment analysis logic and establish automated backend testing.
+    
+
+### Phase 2: Analysis and Integration
+
+*   Finalize document processing pipelines.
+    
+*   Integrate requirement matching and gap analysis models.
+    
+*   Connect analysis services to corresponding API endpoints.
+    
+*   Enhance evidence traceability across analytical outputs.
+    
+*   Complete financial modeling and scenario analysis workflows.
+    
+
+### Phase 3: Frontend Development
+
+*   Finalize API client integration and document management interfaces.
+    
+*   Construct the primary project analysis interface.
+    
+*   Implement risk, cost, and scenario visualization components.
+    
+*   Integrate source-linked evidence views and error-handling utilities.
+    
+
+### Phase 4: Reporting and Deployment
+
+*   Complete CSV, DOCX, and PPTX export functionalities.
+    
+*   Finalize local setup scripts and configuration documentation.
+    
+*   Conduct comprehensive testing using representative project documentation.
+    
+
+Installation and Getting Started
+--------------------------------
+
+### Prerequisites
+
+*   Python 3.10 or a compatible supported version.
+    
+*   Git.
+    
+*   Ollama installed locally with a compatible model configured.
+    
+
+### 1\. Clone the Repository
+
+Bash
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   git clone https://github.com/asvibes/ProjectIQ.git  cd ProjectIQ   `
+
+### 2\. Configure the Python Environment
+
+Bash
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   cd backend  python -m venv .venv  .\.venv\Scripts\Activate.ps1   `
+
+### 3\. Install Dependencies
+
+Bash
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   python -m pip install -r requirements.txt   `
+
+### 4\. Configure Local AI
+
+Initialize Ollama and pull the required model configuration as detailed in the official Ollama documentation.
+
+Current Limitations
+-------------------
+
+*   The platform is under active development and is not yet designated as a production-ready system.
+    
+*   Certain functional modules and export capabilities remain incomplete.
+    
+*   AI-generated outputs require human review and validation prior to utilization.
+    
+*   Analytical accuracy depends directly on the quality of input documentation and model configuration.
+    
+
+License
+-------
+
+This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
