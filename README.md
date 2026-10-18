@@ -137,9 +137,43 @@ Core Design Principles
 Repository Structure
 --------------------
 
-Plaintext
+## Repository Structure
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   ProjectIQ/  ├── backend/  │   ├── app/  │   │   ├── models/  │   │   ├── routers/  │   │   ├── schemas/  │   │   ├── services/  │   │   │   ├── ai/  │   │   │   ├── analysis/  │   │   │   ├── export/  │   │   │   ├── ingestion/  │   │   │   └── verification/  │   │   └── utils/  │   └── tests/  ├── frontend/  │   └── src/  ├── demo-data/  ├── docs/  ├── eval/  └── scripts/   `
+```text
+ProjectIQ/
+├── backend/
+│   ├── app/
+│   │   ├── models/              # Database models
+│   │   ├── routers/             # FastAPI API routes
+│   │   ├── schemas/             # Request and response schemas
+│   │   ├── services/
+│   │   │   ├── ai/              # Local AI services
+│   │   │   ├── analysis/        # Requirement, risk, and resource analysis
+│   │   │   ├── export/          # Report export utilities
+│   │   │   ├── ingestion/       # Document ingestion and processing
+│   │   │   └── verification/    # Validation and evidence verification
+│   │   └── utils/               # Shared utility functions
+│   ├── tests/                   # Backend automated tests
+│   ├── requirements.txt         # Python dependencies
+│   └── ...
+├── frontend/
+│   ├── src/
+│   │   ├── api/                 # Backend API clients
+│   │   ├── components/          # Reusable UI components
+│   │   └── ...
+│   └── ...
+├── demo-data/                   # Sample project and tender documents
+├── docs/                        # Project documentation
+├── eval/                        # Evaluation utilities
+├── scripts/                     # Setup and development scripts
+├── README.md                    # Project overview and setup guide
+├── LICENSE                      # Project license
+├── docker-compose.yml           # Docker Compose configuration
+└── ...
+```
+
+**Note:** This tree provides an overview of the repository. Some directories and files may change as development progresses.
+
 
 Testing Verification
 --------------------
