@@ -1,8 +1,8 @@
 """Scenario API (project-scoped): alternative prices, schedules and assumptions.
 
 Scenarios store *inputs* (``assumptions``, ``overrides``). Their ``results`` are written by
-the finance engine (``services/finance``, not implemented), so ``POST .../calculate`` answers
-501 and results stay null; clients cannot set them.
+the finance engine (``services/finance/scenarios``) when ``POST .../calculate`` runs; clients
+cannot set them. A scenario needs a linked financial model to be calculated (422 otherwise).
 
 ``GET .../compare`` is read-only: it lays the *stored* results of 2-10 scenarios side by side.
 It never recalculates, and scenarios without results are reported as not calculated.
@@ -19,12 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Project, Scenario, ScenarioKind
-from app.routers._common import (
-    NOT_IMPLEMENTED_RESPONSE,
-    get_project_or_404,
-    http_errors,
-    not_implemented,
-)
+from app.routers._common import get_project_or_404, http_errors
 from app.schemas.common import Page
 from app.schemas.scenario import ScenarioComparison, ScenarioCreate, ScenarioRead, ScenarioUpdate
 from app.services import records
@@ -120,14 +115,14 @@ def delete_scenario(
 
 @router.post(
     "/{scenario_id}/calculate",
-    summary="Calculate a scenario (not available yet)",
-    responses=NOT_IMPLEMENTED_RESPONSE,
+    response_model=ScenarioRead,
+    summary="Calculate a scenario from its base model and overrides",
 )
 def calculate_scenario(
     scenario_id: int,
     project: Project = Depends(get_project_or_404),
     db: Session = Depends(get_db),
-) -> None:
+) -> ScenarioRead:
     with http_errors():
-        _get(db, project, scenario_id)
-    not_implemented("Scenario calculation", "the finance engine (app/services/finance/scenarios.py)")
+        scenario = _get(db, project, scenario_id)
+        return _read(scenario_service.calculate_scenario(db, project, scenario))

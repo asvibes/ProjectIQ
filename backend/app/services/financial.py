@@ -1,9 +1,9 @@
 """Rules for financial models and cost lines (inputs only).
 
-Calculations belong to ``services/finance`` (still empty), which will write ``results``,
-``calculated_at`` and ``engine_version``. The API never accepts those fields and does not
-touch them. Deciding when stored results no longer match edited inputs is left to the finance
-engine, which owns the results format.
+Calculations belong to ``services/finance``. ``calculate_model`` below is the only writer of
+``results``, ``calculated_at`` and ``engine_version``; the API never accepts those fields from
+clients. Editing inputs does not clear stored results: ``results["provenance"]`` carries a
+fingerprint of the inputs used, so a stale result can be detected by recalculating.
 """
 from __future__ import annotations
 
@@ -13,8 +13,12 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.models import FinancialCostItem, FinancialModel, Project
+from app.models.types import utcnow
 from app.services import records
 from app.services.errors import ServiceError
+from app.services.finance.cashflow import calculate_financial_results
+from app.services.finance.cost_model import ENGINE_VERSION, FinanceInputError, inputs_from_model
+from app.services.finance.scenarios import inputs_fingerprint
 
 MODEL_NON_NULLABLE = ("name", "currency", "assumptions")
 ITEM_NON_NULLABLE = ("category", "description", "quantity")
@@ -74,3 +78,26 @@ def update_item(
 def delete_item(db: Session, model: FinancialModel, item: FinancialCostItem) -> None:
     db.delete(item)
     records.commit(db)
+
+
+def calculate_model(db: Session, model: FinancialModel) -> FinancialModel:
+    """Run the deterministic finance engine on the stored inputs and store the results.
+
+    Missing inputs are not an error: the engine reports them in the results (``None`` values
+    and status fields) instead of assuming zeros. Only inconsistent stored data (which the
+    API and ORM already prevent) raises 422.
+    """
+    try:
+        inputs = inputs_from_model(model)
+        results = calculate_financial_results(inputs)
+    except FinanceInputError as exc:
+        raise ServiceError(422, f"The financial model's inputs are invalid: {exc}") from exc
+    results["provenance"] = {
+        "engine_version": ENGINE_VERSION,
+        "inputs_fingerprint": inputs_fingerprint(inputs),
+    }
+    model.results = results
+    model.calculated_at = utcnow()
+    model.engine_version = ENGINE_VERSION
+    records.commit(db)
+    return model

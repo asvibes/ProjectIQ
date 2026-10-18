@@ -8,8 +8,12 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.models import FinancialModel, Project, Scenario
+from app.models import ScenarioKind
+from app.models.types import utcnow
 from app.services import records
 from app.services.errors import ServiceError
+from app.services.finance.cost_model import ENGINE_VERSION, FinanceInputError, inputs_from_model
+from app.services.finance.scenarios import calculate_scenario as run_scenario
 
 NON_NULLABLE = ("name", "kind", "assumptions", "overrides", "extra")
 CONFLICT = "This project already has a scenario with that name, or already has a baseline scenario."
@@ -34,3 +38,28 @@ def update_scenario(db: Session, project: Project, scenario: Scenario, values: M
     return records.update_record(
         db, scenario, values, non_nullable=NON_NULLABLE, conflict_message=CONFLICT
     )
+
+
+def calculate_scenario(db: Session, project: Project, scenario: Scenario) -> Scenario:
+    """Calculate a scenario from its base financial model plus its ``overrides``.
+
+    * The scenario needs a base financial model (422 otherwise).
+    * A ``baseline`` scenario is the base model unchanged, so it must not carry overrides.
+    * Unsupported or invalid overrides answer 422 with the reason; nothing is stored then.
+    """
+    _require_model_in_project(db, project, scenario.financial_model_id)
+    model = db.get(FinancialModel, scenario.financial_model_id) if scenario.financial_model_id else None
+    if model is None:
+        raise ServiceError(422, "Link the scenario to a financial model before calculating it.")
+    overrides = scenario.overrides or {}
+    if scenario.kind == ScenarioKind.BASELINE and overrides:
+        raise ServiceError(422, "A baseline scenario is the unchanged base model and cannot have overrides.")
+    try:
+        results = run_scenario(inputs_from_model(model), overrides)
+    except FinanceInputError as exc:
+        raise ServiceError(422, f"The scenario cannot be calculated: {exc}") from exc
+    scenario.results = results
+    scenario.calculated_at = utcnow()
+    scenario.engine_version = ENGINE_VERSION
+    records.commit(db)
+    return scenario

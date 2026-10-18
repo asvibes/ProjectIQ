@@ -1,9 +1,9 @@
 """Financial model API (project-scoped): assumptions and cost lines.
 
 This router stores and edits *inputs*. The calculations (cost totals, break-even, bid price,
-cash flow) belong to ``services/finance``, which is not implemented yet, so
-``POST .../calculate`` answers 501 and ``results`` / ``calculated_at`` / ``engine_version``
-stay null and are never accepted from clients or modified by this router.
+cash flow) belong to ``services/finance``; ``POST .../calculate`` runs them and stores
+``results`` / ``calculated_at`` / ``engine_version``, which clients can never set directly.
+Unknown inputs are reported as unknown in the results, never assumed to be zero.
 
 Rates are fractions between 0 and 1 (0.10 = 10%); money is non-negative. A model or cost line
 belonging to another project answers 404, like a missing one.
@@ -17,12 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import CostCategory, FinancialCostItem, FinancialModel, Project
-from app.routers._common import (
-    NOT_IMPLEMENTED_RESPONSE,
-    get_project_or_404,
-    http_errors,
-    not_implemented,
-)
+from app.routers._common import get_project_or_404, http_errors
 from app.schemas.common import Page
 from app.schemas.financial import (
     CostItemCreate,
@@ -114,20 +109,17 @@ def delete_model(
 
 @router.post(
     "/{model_id}/calculate",
-    summary="Run the finance calculations (not available yet)",
-    responses=NOT_IMPLEMENTED_RESPONSE,
+    response_model=FinancialModelRead,
+    summary="Run the finance calculations and store the results",
 )
 def calculate_model(
     model_id: int,
     project: Project = Depends(get_project_or_404),
     db: Session = Depends(get_db),
-) -> None:
+) -> FinancialModelRead:
     with http_errors():
-        _model_get(db, project, model_id)  # 404 first for an unknown or foreign model
-    not_implemented(
-        "Financial calculation",
-        "the finance engine (app/services/finance: cost_model, bid_pricing, breakeven, cashflow)",
-    )
+        model = _model_get(db, project, model_id)  # 404 first for an unknown or foreign model
+        return _read(financial_service.calculate_model(db, model))
 
 
 # -------------------------------------------------------------------------- cost items
